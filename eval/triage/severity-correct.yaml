@@ -1,0 +1,37 @@
+# Evaluation case: Correct severity triage
+# Mayday correctly triaged an incident as severity 2.
+
+id: "vrd-eval-tri-001"
+version: 1
+timestamp: "2026-02-10T03:22:00Z"
+
+producer:
+  system: "mayday"
+  instance: "mayday-triage-01"
+  model: "claude-sonnet-4-20250514"
+
+subject:
+  type: "triage"
+  service: "payment-service"
+  environment: "production"
+  ref: "incident:INC-2026-0210-001"
+  summary: "Payment processing failures affecting 12% of transactions"
+
+judgment:
+  action: "escalate"
+  score: 0.88
+  confidence: 0.82
+  reasoning: "12% transaction failure rate exceeds sev2 threshold (>5%). Not sev1 because the failure is limited to one payment provider (Stripe), and PayPal fallback is functioning. Customer impact is moderate."
+  tags: ["payments", "stripe", "partial-outage"]
+
+outcome:
+  status: "confirmed"
+  resolution: "Incident correctly handled as sev2. Stripe API issue resolved by provider within 45 minutes."
+  ground_truth:
+    signal: "human_review"
+    value: "escalate"
+    detected_at: "2026-02-10T05:00:00Z"
+  closed_at: "2026-02-10T05:00:00Z"
+
+lineage:
+  context: ["vrd-eval-cor-001"]

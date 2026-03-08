@@ -1,0 +1,45 @@
+# Evaluation case: Incorrect approval (missed a bug)
+# The reviewer approved a change that introduced a subtle SQL injection.
+
+id: "vrd-eval-cr-002"
+version: 1
+timestamp: "2026-01-20T14:00:00Z"
+
+producer:
+  system: "arbiter"
+  model: "claude-sonnet-4-20250514"
+  prompt_version: "v2.0"
+
+subject:
+  type: "agent_output"
+  agent: "code-reviewer"
+  service: "webapp"
+  environment: "production"
+  ref: "git:eval/code-review/inputs/query-builder-injection.diff"
+  summary: "12-line change adding search filter to query builder"
+  content_hash: "sha256:example-hash-002"
+
+judgment:
+  action: "approve"
+  score: 0.78
+  confidence: 0.72
+  dimensions:
+    correctness: 0.80
+    completeness: 0.75
+    safety: 0.70
+  reasoning: "Search filter logic looks correct. Input is validated by the service layer."
+  tags: ["database", "search"]
+
+outcome:
+  status: "overridden"
+  resolution: "SQL injection discovered in production via security scan"
+  override:
+    by: "human:security-team"
+    at: "2026-01-25T09:00:00Z"
+    action: "reject"
+    reasoning: "Input validation in service layer does not cover all paths. The query builder concatenates user input directly when the ORM fallback is triggered."
+  ground_truth:
+    signal: "security_scan"
+    value: "reject"
+    detected_at: "2026-01-25T08:30:00Z"
+  closed_at: "2026-01-25T09:00:00Z"

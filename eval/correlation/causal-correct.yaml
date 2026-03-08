@@ -1,0 +1,36 @@
+# Evaluation case: Correct causal correlation
+# SitRep correctly identified a deploy as the cause of a latency spike.
+
+id: "vrd-eval-cor-001"
+version: 1
+timestamp: "2026-02-01T16:45:00Z"
+
+producer:
+  system: "sitrep"
+  model: "claude-sonnet-4-20250514"
+
+subject:
+  type: "correlation"
+  service: "api-gateway"
+  environment: "production"
+  ref: "snapshot:sitrep-2026-02-01T16:45:00Z"
+  summary: "Deploy v2.3.1 correlated with p99 latency spike from 120ms to 890ms"
+
+judgment:
+  action: "flag"
+  score: 0.85
+  confidence: 0.71
+  dimensions:
+    temporal: 0.92
+    topological: 0.78
+  reasoning: "Deploy v2.3.1 landed 4 minutes before latency spike. The deploy modified connection pooling configuration. Topology confirms the affected services are downstream of the changed component."
+  tags: ["deploy", "latency", "connection-pool"]
+
+outcome:
+  status: "confirmed"
+  resolution: "Rollback of v2.3.1 resolved the latency spike within 2 minutes"
+  ground_truth:
+    signal: "rollback_resolution"
+    value: "flag"
+    detected_at: "2026-02-01T17:15:00Z"
+  closed_at: "2026-02-01T17:15:00Z"

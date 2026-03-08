@@ -1,0 +1,40 @@
+# Evaluation case: Correct approval of a safe code change
+# The reviewer correctly approved a well-written auth middleware change.
+
+id: "vrd-eval-cr-001"
+version: 1
+timestamp: "2026-01-15T10:30:00Z"
+
+producer:
+  system: "arbiter"
+  model: "claude-sonnet-4-20250514"
+  prompt_version: "v2.0"
+
+subject:
+  type: "agent_output"
+  agent: "code-reviewer"
+  service: "webapp"
+  environment: "production"
+  ref: "git:eval/code-review/inputs/auth-middleware-safe.diff"
+  summary: "8-line change adding token expiry check to auth middleware"
+  content_hash: "sha256:example-hash-001"
+
+judgment:
+  action: "approve"
+  score: 0.91
+  confidence: 0.85
+  dimensions:
+    correctness: 0.95
+    completeness: 0.88
+    safety: 0.92
+  reasoning: "Token expiry check is correctly implemented. Uses constant-time comparison. No security issues."
+  tags: ["auth", "security"]
+
+outcome:
+  status: "confirmed"
+  resolution: "Change deployed successfully, no incidents related to auth in following 30 days"
+  ground_truth:
+    signal: "human_review"
+    value: "approve"
+    detected_at: "2026-02-15T10:30:00Z"
+  closed_at: "2026-02-15T10:30:00Z"

@@ -1,0 +1,69 @@
+# Verdict — Annotated Example
+# This is a complete verdict with annotations explaining each field.
+
+verdict:
+  # --- Identity ---
+  id: "vrd-2026-03-07-00142"           # Unique, globally. Format: vrd-{date}-{sequence}
+  version: 1                            # Schema version (always 1 for now)
+  timestamp: "2026-03-07T14:22:00Z"     # ISO 8601, when the judgment was made
+
+  # --- Who made this judgment ---
+  producer:
+    system: "arbiter"                    # Component or application name (required)
+    instance: "arbiter-prod-01"          # Which instance, for multi-instance deployments
+    model: "claude-sonnet-4-20250514"    # Which model produced the judgment
+    prompt_version: "v2.3"               # Track prompt changes to correlate with accuracy
+
+  # --- What was evaluated ---
+  subject:
+    type: "agent_output"                 # One of: agent_output, correlation, triage,
+                                         #   investigation, remediation, review,
+                                         #   classification, recommendation, moderation, custom
+    agent: "code-reviewer"               # The agent whose output is being judged
+    service: "webapp"                     # Service context
+    environment: "production"            # Deployment environment
+    ref: "git:abc123..def456"            # Pointer to the input being evaluated
+    summary: "14-line diff to auth middleware"  # Human-readable summary
+    content_hash: "sha256:9f86d08..."    # Hash of input content, for replay verification
+
+  # --- The judgment itself ---
+  judgment:
+    action: "approve"                    # One of: approve, reject, flag, escalate, defer, custom
+    score: 0.82                          # Overall quality score, 0.0-1.0
+    confidence: 0.78                     # How confident the producer is, 0.0-1.0
+    dimensions:                          # Optional per-dimension breakdown
+      correctness: 0.9
+      completeness: 0.75
+      safety: 0.85
+    reasoning: "Auth check is sound. Missing rate limit on new endpoint."
+    tags: ["auth", "security", "api"]    # For filtering and aggregation
+
+  # --- What happened after (updated asynchronously) ---
+  outcome:
+    status: "pending"                    # One of: pending, confirmed, overridden,
+                                         #   partial, superseded, expired
+    resolution: null                     # Human-readable description of what happened
+    override:
+      by: null                           # Who overrode: human:name, system:component, auto:rule
+      at: null                           # When the override happened
+      action: null                       # What the override changed the action to
+      reasoning: null                    # Why the override happened
+    ground_truth:
+      signal: null                       # What provided ground truth (test failure, incident, etc.)
+      value: null                        # What the correct judgment would have been
+      detected_at: null                  # When ground truth became available
+    closed_at: null                      # When this verdict's outcome was finalised
+
+  # --- Lineage (optional) ---
+  lineage:
+    parent: null                         # Verdict ID this one responds to or overrides
+    children: []                         # Verdict IDs produced in response to this one
+    context: []                          # Verdict IDs that informed this judgment
+
+  # --- Metadata ---
+  metadata:
+    cost_tokens: 1247                    # Tokens consumed producing this judgment
+    cost_currency: 0.003                 # Estimated cost in USD
+    latency_ms: 2340                     # Time to produce this judgment
+    ttl: 7776000                         # Seconds until expiry (default 90 days)
+    custom: {}                           # Extension point for domain-specific data

@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/robfox/verdict/schema/verdict.json",
+  "title": "Verdict",
+  "description": "A structured record of an AI judgment",
+  "type": "object",
+  "required": ["id", "version", "timestamp", "producer", "subject", "judgment", "outcome"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^vrd-",
+      "description": "Unique verdict identifier"
+    },
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the judgment was made"
+    },
+    "producer": {
+      "type": "object",
+      "required": ["system"],
+      "properties": {
+        "system": {
+          "type": "string",
+          "description": "Component or application name"
+        },
+        "instance": {
+          "type": "string",
+          "description": "Instance identifier for multi-instance deployments"
+        },
+        "model": {
+          "type": "string",
+          "description": "Which model produced the judgment"
+        },
+        "prompt_version": {
+          "type": "string",
+          "description": "Version of the prompt used"
+        }
+      },
+      "additionalProperties": false
+    },
+    "subject": {
+      "type": "object",
+      "required": ["type", "ref", "summary"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "agent_output",
+            "correlation",
+            "triage",
+            "investigation",
+            "remediation",
+            "review",
+            "classification",
+            "recommendation",
+            "moderation",
+            "custom"
+          ],
+          "description": "What kind of judgment this verdict records"
+        },
+        "agent": {
+          "type": "string",
+          "description": "The agent whose output is being judged"
+        },
+        "service": {
+          "type": "string",
+          "description": "Service context"
+        },
+        "environment": {
+          "type": "string",
+          "description": "Deployment environment"
+        },
+        "ref": {
+          "type": "string",
+          "description": "Pointer to the input (git ref, snapshot ID, URL, etc.)"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Human-readable summary of what was evaluated"
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^sha256:",
+          "description": "Hash of the input content for replay verification"
+        }
+      },
+      "additionalProperties": false
+    },
+    "judgment": {
+      "type": "object",
+      "required": ["action", "confidence"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": ["approve", "reject", "flag", "escalate", "defer", "custom"],
+          "description": "The judgment action"
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Overall quality score"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Producer confidence in this judgment"
+        },
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0
+          },
+          "description": "Breakdown by quality dimension"
+        },
+        "reasoning": {
+          "type": "string",
+          "description": "Why the producer made this judgment"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tags for filtering and aggregation"
+        }
+      },
+      "additionalProperties": false
+    },
+    "outcome": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "confirmed", "overridden", "partial", "superseded", "expired"],
+          "description": "Outcome status"
+        },
+        "resolution": {
+          "type": ["string", "null"],
+          "description": "Human-readable description of what actually happened"
+        },
+        "override": {
+          "type": "object",
+          "properties": {
+            "by": {
+              "type": ["string", "null"],
+              "description": "Who overrode (human:name, system:component, or auto:rule)"
+            },
+            "at": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "When the override happened"
+            },
+            "action": {
+              "type": ["string", "null"],
+              "description": "What the override changed the action to"
+            },
+            "reasoning": {
+              "type": ["string", "null"],
+              "description": "Why the override happened"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ground_truth": {
+          "type": "object",
+          "properties": {
+            "signal": {
+              "type": ["string", "null"],
+              "description": "What provided the ground truth"
+            },
+            "value": {
+              "type": ["string", "null"],
+              "description": "What the correct judgment would have been"
+            },
+            "detected_at": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "When the ground truth became available"
+            }
+          },
+          "additionalProperties": false
+        },
+        "closed_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When this verdict's outcome was finalised"
+        }
+      },
+      "additionalProperties": false
+    },
+    "lineage": {
+      "type": "object",
+      "properties": {
+        "parent": {
+          "type": ["string", "null"],
+          "description": "Verdict ID that this one responds to or overrides"
+        },
+        "children": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Verdict IDs produced in response to this one"
+        },
+        "context": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Verdict IDs that informed this judgment"
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "cost_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Tokens consumed producing this judgment"
+        },
+        "cost_currency": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Estimated cost in USD"
+        },
+        "latency_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Time to produce this judgment in milliseconds"
+        },
+        "ttl": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 7776000,
+          "description": "Seconds until this verdict can be expired (default 90 days)"
+        },
+        "custom": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Extension point for domain-specific data"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
