@@ -20,5 +20,8 @@ classifiers = [
     "Topic :: Software Development :: Quality Assurance",
 ]
 
+[project.scripts]
+verdict = "verdict.cli:main"
+
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]

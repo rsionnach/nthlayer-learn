@@ -2,7 +2,7 @@
 
 The atomic unit of AI judgment. A schema and transport library for recording AI decisions and closing the loop on whether they were correct.
 
-**Status: Python library implemented. CLI not yet implemented.**
+**Status: Python library implemented. CLI implemented (Phase 0 complete).**
 
 ---
 
@@ -32,12 +32,14 @@ verdicts/
 │           ├── core.py          # Operations: create, link, resolve, supersede
 │           ├── serialise.py     # to_json, from_json, to_dict, from_dict
 │           ├── store.py         # VerdictStore ABC, MemoryStore, VerdictFilter, AccuracyFilter
-│           └── sqlite_store.py  # SQLiteVerdictStore — WAL-mode, thread-local connections
+│           ├── sqlite_store.py  # SQLiteVerdictStore — WAL-mode, thread-local connections
+│           ├── cli.py           # CLI entry point — accuracy and list subcommands
+│           └── __main__.py      # python -m verdict entry point
 ├── stores/
 │   ├── sqlite/                  # Default Tier 1 store
 │   ├── postgres/                # Tier 2 store
 │   └── clickhouse/              # Tier 3 store
-├── cli/                         # CLI tools (not yet implemented)
+├── cli/                         # CLI tools (accuracy, list implemented; replay, eval, gaming-check planned)
 └── eval/                        # Example evaluation datasets
 ```
 
@@ -170,10 +172,25 @@ Metrics emitted via OTel Collector → Prometheus: `gen_ai_decision_total`, `gen
 
 ---
 
-## Planned CLI (Not Yet Implemented)
+## CLI
+
+Entry point: `verdict` (installed via `pip install verdict`) or `python -m verdict`.
+
+### Implemented subcommands
 
 ```bash
-verdict accuracy --producer arbiter --window 30d
+verdict accuracy --producer <name> [--window 30d] [--db verdicts.db]
+verdict list [--producer <name>] [--status pending] [--limit 20] [--db verdicts.db]
+```
+
+- `accuracy`: prints confirmation rate, override rate, partial rate, pending rate, and mean confidence for confirmed/overridden verdicts. `--producer` is required. `--window` filters to recent verdicts using duration format (ms, s, m, h, d, w).
+- `list`: tabular output of verdict ID, timestamp, status, confidence, producer, and subject ref. All flags optional.
+- Default `--db` path: `verdicts.db` (relative to cwd). SQLite creates the file if missing.
+- Duration format: `NNunit` where unit is `ms`, `s`, `m`, `h`, `d`, or `w` (e.g. `30d`, `24h`).
+
+### Planned subcommands (not yet implemented)
+
+```bash
 verdict replay --producer arbiter --from 2026-02-01 --to 2026-03-01
 verdict eval --producer arbiter --dataset eval/arbiter/
 verdict gaming-check --producer arbiter --agent code-reviewer --window 90d
