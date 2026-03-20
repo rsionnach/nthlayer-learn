@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import re
 import subprocess
 import sys
-import tempfile
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -77,7 +74,6 @@ def seeded_db(tmp_path: Path) -> str:
 class TestAccuracyCommand:
     def test_accuracy_basic(self, seeded_db: str) -> None:
         """accuracy --producer arbiter shows confirmation/override rates."""
-        from nthlayer_learn.cli import main
 
         out = _run_cli(["accuracy", "--producer", "arbiter", "--db", seeded_db])
         assert "arbiter" in out

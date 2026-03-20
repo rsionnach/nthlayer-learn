@@ -3,7 +3,6 @@
 import threading
 from datetime import datetime, timedelta, timezone
 
-import pytest
 
 from nthlayer_learn.core import create, resolve
 from nthlayer_learn.models import Outcome
