@@ -128,6 +128,25 @@ def _cmd_retrospective(args: argparse.Namespace) -> None:
 
 
 def main(argv: list[str] | None = None) -> None:
+    import sys
+
+    sys.stderr.write(
+        "nthlayer-learn is deprecated as of v1.0.0 (2026-04-28).\n"
+        "\n"
+        "Functionality moved to nthlayer-workers (LearnOutcomeModule, "
+        "LearnRetrospectiveModule); the verdict model migrated into "
+        "nthlayer-common.verdicts.\n"
+        "\n"
+        "Migration:\n"
+        "  pip uninstall nthlayer-learn\n"
+        "  pip install nthlayer-workers\n"
+        "\n"
+        "See https://github.com/rsionnach/nthlayer-learn for details.\n"
+    )
+    sys.exit(1)
+
+
+def _legacy_main_kept_for_reference(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="nthlayer-learn", description="Query verdict stores")
     sub = parser.add_subparsers(dest="command")
     sub.required = True
